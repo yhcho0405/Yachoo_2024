@@ -1,0 +1,108 @@
+.no-drag {
+    -ms-user-select: none;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+}
+
+body {
+    display: grid;
+    overflow-y: hidden;
+    grid-template-areas:
+        "board dice"
+        "board game"
+        "board chat";
+    grid-template-rows: 90px 60px 1fr;
+    grid-template-columns: 300px 1fr;
+    grid-gap: 5px;
+    height: 100vh;
+    background-color: rgb(209, 200, 146);
+}
+
+button {
+    border-radius: 5px;
+    border: 1px solid black;
+}
+
+.dice_area {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    text-align: center;
+    line-height: 90px;
+    grid-area: dice;
+    background-color: rgb(209, 200, 146);
+    font-size: 80px;
+    color: black;
+}
+
+.btn {
+    color: gray;
+}
+
+.chat_area {
+    grid-area: chat;
+    margin-bottom: 20px;
+}
+
+.chat_text_area {
+    height: 70%;
+}
+
+.game_area {
+    grid-area: game;
+}
+
+.board_area {
+    grid-area: board;
+    margin-bottom: 100px;
+}
+
+.board_area::-webkit-scrollbar {
+    width: 0px;
+    background-color: rgb(209, 200, 146);
+}
+
+.room_name {
+    margin: 0px;
+}
+
+.chat_area {
+    width: 100%;
+    height: 100%;
+}
+
+.name {
+    width: 20%;
+}
+
+.message {
+    width: 55%;
+}
+
+.chat {
+    width: 15%;
+}
+
+footer {
+    position: fixed;
+    height: 30px;
+    z-index: 9999;
+    font-size: 10px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: white;
+    background-color: #333333;
+    text-align: center;
+}
+
+.rollingbtn {
+    width: 100%;
+    height: 40px;
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
