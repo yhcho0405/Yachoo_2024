@@ -7,6 +7,7 @@ stompClient.connect({}, onConnected);
 function onConnected() {
     console.log("Connected socket");
 
+
     stompClient.subscribe("/user/public", assignUser);
 
     stompClient.subscribe("/user/receiveMessage", receiveMessageHandler);
@@ -20,12 +21,27 @@ function onConnected() {
     stompClient.subscribe("/user/cssMe", cssMeHandler);
     stompClient.subscribe("/user/rolledDice", rolledDiceHandler);
     stompClient.subscribe("/user/diceUpdate", diceUpdateHandler);
+
+    stompClient.send("/app/user.addUser", {});
 }
 
 
 function assignUser(message) {
-    const name = JSON.parse(message.body);
-    console.log("assigning user:" + name);
+    var data = JSON.parse(message.body);
+    userId = data.userId;
+    console.log("assigning user:" + userId);
+    $("#name").val("user" + userId);
+    var rooms = data.rooms;
+    var visitors = data.visitors;
+    $(".roomlist").empty();
+    for (var i = 1; i <= rooms; i++) {
+        var listItem = `<li style="color:${visitors[i - 1] == 2 ? "#C23535" : visitors[i - 1] == 1 ? "#0A07A6" : "#2C2312"};"><b>room ${i} (${visitors[i - 1]} / 2)</b>`;
+        if (visitors[i - 1] < 2) {
+            listItem += ` <button onclick="joinRoom(${i});">Join</button></li>`;
+        }
+        $(".roomlist").append(listItem);
+    }
+    cssMe("#errorstr", "display", "none");
 }
 
 
@@ -36,7 +52,7 @@ function receiveMessageHandler(message) {
 
 function changeNameHandler(message) {
     console.log("Received message: " + message);
-    var name = JSON.parse(message.body).name;
+    var name = JSON.parse(message.body).userId;
     $("#name").val(name);
 }
 
