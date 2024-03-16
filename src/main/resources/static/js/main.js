@@ -8,31 +8,18 @@ function onConnected() {
     console.log("Connected socket");
 
 
-    stompClient.subscribe("/user/public", assignUser);
+    stompClient.subscribe("/user/queue/info", assignUser);
 
-    stompClient.subscribe("/user/receiveMessage", receiveMessageHandler);
-    stompClient.subscribe("/user/queue/changeName", changeNameHandler);
-    stompClient.subscribe("/user/roomList", roomListHandler);
-    stompClient.subscribe("/user/joinedRoom", joinedRoomHandler);
-    stompClient.subscribe("/user/drawTable", drawTableHandler);
-    stompClient.subscribe("/user/testCli", testCliHandler);
-    stompClient.subscribe("/user/appendMe", appendMeHandler);
-    stompClient.subscribe("/user/highlightMe", highlightMeHandler);
-    stompClient.subscribe("/user/cssMe", cssMeHandler);
-    stompClient.subscribe("/user/rolledDice", rolledDiceHandler);
-    stompClient.subscribe("/user/diceUpdate", diceUpdateHandler);
-
-    stompClient.send("/app/user.addUser", {});
+    stompClient.send("/app/connect", {});
 }
 
 
 function assignUser(message) {
     var data = JSON.parse(message.body);
-    userId = data.userId;
-    console.log("assigning user:" + userId);
-    $("#name").val("user" + userId);
-    var rooms = data.rooms;
-    var visitors = data.visitors;
+    const username = data.username;
+    $("#name").val(username);
+    var rooms = data.totalRooms;
+    var visitors = data.roomStatuses;
     $(".roomlist").empty();
     for (var i = 1; i <= rooms; i++) {
         var listItem = `<li style="color:${visitors[i - 1] == 2 ? "#C23535" : visitors[i - 1] == 1 ? "#0A07A6" : "#2C2312"};"><b>room ${i} (${visitors[i - 1]} / 2)</b>`;
@@ -42,18 +29,28 @@ function assignUser(message) {
         $(".roomlist").append(listItem);
     }
     cssMe("#errorstr", "display", "none");
+
+
+    stompClient.subscribe(`/user/queue/room/join`, joinedRoomHandler);
+    stompClient.subscribe(`/user/room/join`, joinedRoomHandler);
+    stompClient.subscribe(`/user/queue/room`, joinedRoomHandler);
+
+    stompClient.subscribe(`/user/${username}/queue/table`, drawTableHandler);
+
+    stompClient.subscribe("/user/receiveMessage", receiveMessageHandler);
+    stompClient.subscribe("/user/roomList", roomListHandler);
+    stompClient.subscribe("/user/testCli", testCliHandler);
+    stompClient.subscribe("/user/appendMe", appendMeHandler);
+    stompClient.subscribe("/user/highlightMe", highlightMeHandler);
+    stompClient.subscribe("/user/cssMe", cssMeHandler);
+    stompClient.subscribe("/user/rolledDice", rolledDiceHandler);
+    stompClient.subscribe("/user/diceUpdate", diceUpdateHandler);
 }
 
 
 function receiveMessageHandler(message) {
     var msg = JSON.parse(message.body).content;
     handleMessage(msg);
-}
-
-function changeNameHandler(message) {
-    console.log("Received message: " + message);
-    var name = JSON.parse(message.body).userId;
-    $("#name").val(name);
 }
 
 function roomListHandler(message) {
@@ -72,7 +69,8 @@ function roomListHandler(message) {
 }
 
 function joinedRoomHandler(message) {
-    var roomNumber = JSON.parse(message.body).roomNumber;
+    var roomNumber = JSON.parse(message.body);
+    console.log(roomNumber);
     cssMe(".rollingbtn", "display", "block");
     cssMe(".hidden", "display", "block");
     $(".room_name").append(`Room ${roomNumber}`);
@@ -80,7 +78,8 @@ function joinedRoomHandler(message) {
 }
 
 function drawTableHandler(message) {
-    var isStart = JSON.parse(message.body).isStart;
+    var isStart = JSON.parse(message.body);
+    console.log("drawTableHandler", isStart)
     if (isStart) $(".game_table").append(tableHTML);
     else $(".game_table").empty();
 }
@@ -209,8 +208,8 @@ function handleMessage(msg) {
     }
 }
 
-function joinRoom(roomNumber) {
-    stompClient.send("/app/joinRoom", {}, JSON.stringify({ roomNumber: roomNumber }));
+function joinRoom(roomId) {
+    stompClient.send("/app/room/join", {}, JSON.stringify({ roomId: roomId }));
 }
 
 function appendMe(target, content) {
@@ -346,3 +345,17 @@ font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
 </tbody>
 </table>
 `;
+
+
+
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+    }
+    
+    return result;
+  }

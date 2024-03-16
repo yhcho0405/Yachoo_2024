@@ -1,15 +1,12 @@
 package proj.yachoo.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Setter @Getter
+@Data
+@AllArgsConstructor
 public class User {
+    private String username;
+    private String sessionId;
 
-    public enum Status {
-        ONLINE, OFFLINE
-    }
-
-    private int id;
-    private Status status;
 }
