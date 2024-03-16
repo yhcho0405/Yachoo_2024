@@ -32,13 +32,11 @@ function assignUser(message) {
 
 
     stompClient.subscribe(`/user/queue/room/join`, joinedRoomHandler);
-    stompClient.subscribe(`/user/room/join`, joinedRoomHandler);
-    stompClient.subscribe(`/user/queue/room`, joinedRoomHandler);
 
+    stompClient.subscribe("/topic/room/list", roomListHandler);
     stompClient.subscribe(`/user/${username}/queue/table`, drawTableHandler);
 
     stompClient.subscribe("/user/receiveMessage", receiveMessageHandler);
-    stompClient.subscribe("/user/roomList", roomListHandler);
     stompClient.subscribe("/user/testCli", testCliHandler);
     stompClient.subscribe("/user/appendMe", appendMeHandler);
     stompClient.subscribe("/user/highlightMe", highlightMeHandler);
@@ -55,8 +53,8 @@ function receiveMessageHandler(message) {
 
 function roomListHandler(message) {
     var data = JSON.parse(message.body);
-    var rooms = data.rooms;
-    var visitors = data.visitors;
+    var rooms = data.totalRooms;
+    var visitors = data.roomStatuses;
     $(".roomlist").empty();
     for (var i = 1; i <= rooms; i++) {
         var listItem = `<li style="color:${visitors[i - 1] == 2 ? "#C23535" : visitors[i - 1] == 1 ? "#0A07A6" : "#2C2312"};"><b>room ${i} (${visitors[i - 1]} / 2)</b>`;
@@ -69,6 +67,7 @@ function roomListHandler(message) {
 }
 
 function joinedRoomHandler(message) {
+    stompClient.unsubscribe("/user/topic/room/list");
     var roomNumber = JSON.parse(message.body);
     console.log(roomNumber);
     cssMe(".rollingbtn", "display", "block");

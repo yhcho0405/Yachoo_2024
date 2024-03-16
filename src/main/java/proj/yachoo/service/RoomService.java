@@ -27,6 +27,12 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
+    public int[] getRoomStatuses() {
+        return getRooms().stream()
+                .mapToInt(room -> room.getStatus().ordinal())
+                .toArray();
+    }
+
     public synchronized boolean joinRoom(User user, int roomId) {
         Room room = roomRepository.findById(roomId);
 
@@ -37,6 +43,7 @@ public class RoomService {
                 RoomStatus newStatus = RoomStatus.values()[currentStatus.ordinal() + 1];
                 room.setStatus(newStatus);
                 room.getUsers().add(user);
+                user.setStatus(User.UserStatus.ROOM);
                 roomRepository.save(room);
                 return true;
             }
