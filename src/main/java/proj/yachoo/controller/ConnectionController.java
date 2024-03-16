@@ -1,5 +1,6 @@
 package proj.yachoo.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -29,7 +30,7 @@ public class ConnectionController {
 
         List<Room> rooms = roomService.getRooms();
         int[] roomStatuses = rooms.stream().mapToInt(room -> room.getStatus().ordinal()).toArray();
-
+        
         return new ConnectionInfoDto(user.getUsername(), rooms.size(), roomStatuses);
     }
 
@@ -38,6 +39,7 @@ public class ConnectionController {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         User user = (User) headerAccessor.getSessionAttributes().get("user");
 
+        // 유저 연결 종료
         roomService.removeUserFromRoom(user);
     }
 

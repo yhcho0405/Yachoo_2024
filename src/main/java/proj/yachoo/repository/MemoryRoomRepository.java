@@ -1,27 +1,28 @@
 package proj.yachoo.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Repository;
 import proj.yachoo.domain.Room;
 
 @Repository
 public class MemoryRoomRepository implements RoomRepository {
-    private List<Room> rooms = new ArrayList<>();
+    private Map<Integer, Room> roomMap = new HashMap<>();
 
     @Override
     public List<Room> findAll() {
-        return rooms;
+        return new ArrayList<>(roomMap.values());
     }
 
     @Override
     public Room findById(int id) {
-        return rooms.stream().filter(r -> r.getId() == id).findFirst().orElse(null);
+        return roomMap.get(id);
     }
 
     @Override
     public void save(Room room) {
-        rooms.removeIf(r -> r.getId() == room.getId());
-        rooms.add(room);
+        roomMap.put(room.getId(), room);
     }
 }
