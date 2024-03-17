@@ -5,7 +5,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import proj.yachoo.domain.User;
-import proj.yachoo.dto.message.ChatMessageDto;
+import proj.yachoo.dto.response.ChatMessageDto;
 import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.RoomService;
 import proj.yachoo.service.UserService;
@@ -21,7 +21,6 @@ public class ChatController {
     @MessageMapping("/chat")
     public void handleChatMessage(ChatMessageDto chatMessageDto) {
         User user = userService.findByUsername(chatMessageDto.getUsername());
-        System.out.println("user = " + user);
         if (user != null) {
             if (user.isInLobby()) {
                 sendToLobby(chatMessageDto);

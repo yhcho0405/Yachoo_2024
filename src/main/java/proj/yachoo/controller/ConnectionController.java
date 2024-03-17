@@ -12,10 +12,11 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import proj.yachoo.domain.User;
-import proj.yachoo.dto.message.ConnectionInfoDto;
-import proj.yachoo.dto.message.RoomListDto;
+import proj.yachoo.dto.response.ConnectionInfoDto;
+import proj.yachoo.dto.response.RoomListDto;
 import proj.yachoo.dto.request.JoinRoomRequestDto;
 import proj.yachoo.service.LobbyService;
+import proj.yachoo.service.NotificationService;
 import proj.yachoo.service.RoomService;
 import proj.yachoo.service.UserService;
 
@@ -26,6 +27,7 @@ public class ConnectionController {
     private final UserService userService;
     private final RoomService roomService;
     private final LobbyService lobbyService;
+    private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/connect")
@@ -35,6 +37,7 @@ public class ConnectionController {
         headerAccessor.getSessionAttributes().put("user", user);
 
         lobbyService.addUserToLobby(user.getSessionId());
+        notificationService.sendLobby(user.getUsername() + " joined the lobby.");
 
         return new ConnectionInfoDto(
                 user.getUsername(),
@@ -63,6 +66,9 @@ public class ConnectionController {
                             roomService.getRoomStatuses()
                     )
             );
+            notificationService.sendUser(user.getSessionId(), "join room" + requestDto.getRoomId() + ".");
+            notificationService.sendRoom(requestDto.getRoomId(), user.getUsername() + " joined the room.");
+            notificationService.sendLobby(user.getUsername() + " joined the room" + requestDto.getRoomId() + ".");
         }
     }
 
@@ -74,9 +80,9 @@ public class ConnectionController {
         // 유저 연결 종료
         if (user != null) {
             userService.removeUser(user);
-            if (user.getRoomId() != null) { // room에 접속해 있을 때
+            if (user.isInRoom()) { // room에 접속해 있을 때
+                notificationService.sendRoom(user.getRoomId(), user.getUsername() + " left the room.");
                 roomService.removeUserFromRoom(user);
-
                 messagingTemplate.convertAndSend(
                         "/topic/room/list",
                         new RoomListDto(
@@ -84,8 +90,10 @@ public class ConnectionController {
                                 roomService.getRoomStatuses()
                         )
                 );
-            } else { // lobby에 접속해 있을 때
+
+            } else if (user.isInLobby()) { // lobby에 접속해 있을 때
                 lobbyService.removeUserFromLobby(user.getSessionId());
+                notificationService.sendLobby(user.getUsername() + " left the lobby.");
             }
         }
     }

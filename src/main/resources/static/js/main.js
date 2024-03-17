@@ -4,7 +4,7 @@ var stompClient = Stomp.over(socket);
 
 stompClient.connect({}, onConnected);
 
-var sub_roomlist, sub_lobbychat;
+var sub_roomlist, sub_lobbychat, sub_lobbynoti;
 
 function onConnected() {
     console.log("Connected socket");
@@ -36,7 +36,10 @@ function assignUser(message) {
     stompClient.subscribe(`/user/queue/room/join`, joinedRoomHandler);
 
     sub_roomlist = stompClient.subscribe("/topic/room/list", roomListHandler);
-    sub_lobbychat = stompClient.subscribe("/topic/lobby/chat", receiveMessageHandler);
+    sub_lobbychat = stompClient.subscribe("/topic/lobby/chat", receiveChatHandler);
+    sub_lobbynoti = stompClient.subscribe("/topic/lobby/notifications", receiveMessageHandler);
+    stompClient.subscribe("/topic/notifications", receiveMessageHandler);
+    stompClient.subscribe("/user/queue/notifications", receiveMessageHandler);
     stompClient.subscribe(`/user/${username}/queue/table`, drawTableHandler);
 
     stompClient.subscribe("/user/testCli", testCliHandler);
@@ -48,10 +51,16 @@ function assignUser(message) {
 }
 
 
-function receiveMessageHandler(message) {
+function receiveChatHandler(message) {
     var usrname = JSON.parse(message.body).username;
     var msg = JSON.parse(message.body).message;
     handleMessage(usrname, msg);
+}
+
+function receiveMessageHandler(message) {
+    var msg = JSON.parse(message.body).message;
+    $("#chatLog").append(msg + "\n");
+    $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
 }
 
 function roomListHandler(message) {
@@ -72,8 +81,10 @@ function roomListHandler(message) {
 function joinedRoomHandler(message) {
     sub_roomlist.unsubscribe();
     sub_lobbychat.unsubscribe();
+    sub_lobbynoti.unsubscribe();
     var roomNumber = JSON.parse(message.body);
-    stompClient.subscribe(`/topic/room/${roomNumber}/chat`, receiveMessageHandler);
+    stompClient.subscribe(`/topic/room/${roomNumber}/chat`, receiveChatHandler);
+    stompClient.subscribe(`/topic/room/${roomNumber}/notifications`, receiveMessageHandler);
     console.log(roomNumber);
     cssMe(".rollingbtn", "display", "block");
     cssMe(".hidden", "display", "block");
@@ -207,8 +218,7 @@ function handleMessage(usrname, msg) {
     } else if (msg === "!@#$exit hidden!@#$") {
         $(".hidden").css("display", "none");
     } else {
-        if (usrname == "server") $("#chatLog").append("[server] " + msg + "\n");
-        else $("#chatLog").append(usrname + " : " + msg + "\n");
+        $("#chatLog").append(usrname + " : " + msg + "\n");
         $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
     }
 }

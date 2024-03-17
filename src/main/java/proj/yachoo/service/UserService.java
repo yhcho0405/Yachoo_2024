@@ -9,7 +9,7 @@ import proj.yachoo.repository.UserRepository;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final AtomicInteger userCounter = new AtomicInteger(10000);
+    private final AtomicInteger userCounter = new AtomicInteger(1000);
     private final UserRepository userRepository;
 
     public User generateUser(String sessionId) {
