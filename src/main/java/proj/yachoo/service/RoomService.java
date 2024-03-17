@@ -43,7 +43,7 @@ public class RoomService {
                 RoomStatus newStatus = RoomStatus.values()[currentStatus.ordinal() + 1];
                 room.setStatus(newStatus);
                 room.getUsers().add(user);
-                user.setStatus(User.UserStatus.ROOM);
+                user.setRoomId(roomId);
                 roomRepository.save(room);
                 return true;
             }
@@ -60,6 +60,7 @@ public class RoomService {
             room.getUsers().remove(user);
             RoomStatus newStatus = RoomStatus.values()[room.getUsers().size()];
             room.setStatus(newStatus);
+            user.setRoomId(null);
             roomRepository.save(room);
         }
     }

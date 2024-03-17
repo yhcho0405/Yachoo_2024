@@ -8,15 +8,19 @@ import lombok.Data;
 public class User {
     private String username;
     private String sessionId;
-    private UserStatus status;
-
-    public enum UserStatus {
-        LOBBY, ROOM
-    }
+    private Integer roomId;
 
     public User(String username, String sessionId) {
         this.username = username;
         this.sessionId = sessionId;
-        this.status = UserStatus.LOBBY;
+        this.roomId = null;
+    }
+
+    public boolean isInLobby() {
+        return roomId == null;
+    }
+
+    public boolean isInRoom() {
+        return roomId != null;
     }
 }

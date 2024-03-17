@@ -4,6 +4,8 @@ var stompClient = Stomp.over(socket);
 
 stompClient.connect({}, onConnected);
 
+var sub_roomlist, sub_lobbychat;
+
 function onConnected() {
     console.log("Connected socket");
 
@@ -33,10 +35,10 @@ function assignUser(message) {
 
     stompClient.subscribe(`/user/queue/room/join`, joinedRoomHandler);
 
-    stompClient.subscribe("/topic/room/list", roomListHandler);
+    sub_roomlist = stompClient.subscribe("/topic/room/list", roomListHandler);
+    sub_lobbychat = stompClient.subscribe("/topic/lobby/chat", receiveMessageHandler);
     stompClient.subscribe(`/user/${username}/queue/table`, drawTableHandler);
 
-    stompClient.subscribe("/user/receiveMessage", receiveMessageHandler);
     stompClient.subscribe("/user/testCli", testCliHandler);
     stompClient.subscribe("/user/appendMe", appendMeHandler);
     stompClient.subscribe("/user/highlightMe", highlightMeHandler);
@@ -47,8 +49,9 @@ function assignUser(message) {
 
 
 function receiveMessageHandler(message) {
-    var msg = JSON.parse(message.body).content;
-    handleMessage(msg);
+    var usrname = JSON.parse(message.body).username;
+    var msg = JSON.parse(message.body).message;
+    handleMessage(usrname, msg);
 }
 
 function roomListHandler(message) {
@@ -67,8 +70,10 @@ function roomListHandler(message) {
 }
 
 function joinedRoomHandler(message) {
-    stompClient.unsubscribe("/user/topic/room/list");
+    sub_roomlist.unsubscribe();
+    sub_lobbychat.unsubscribe();
     var roomNumber = JSON.parse(message.body);
+    stompClient.subscribe(`/topic/room/${roomNumber}/chat`, receiveMessageHandler);
     console.log(roomNumber);
     cssMe(".rollingbtn", "display", "block");
     cssMe(".hidden", "display", "block");
@@ -167,10 +172,10 @@ function rollingDice() {
 // 채팅 메시지 전송
 $("#chat").on("submit", function (e) {
     e.preventDefault();
-    var name = $("#name").val().trim();
+    var username = $("#name").val().trim();
     var message = $("#message").val().trim();
     if (message) {
-        stompClient.send("/app/sendMessage", {}, JSON.stringify({ name: name, message: message }));
+        stompClient.send("/app/chat", {}, JSON.stringify({ username: username, message: message }));
         $("#message").val("");
         $("#message").focus();
     }
@@ -196,13 +201,14 @@ function testfunc(turn, parent) {
     isfirstRoll = 1;
 }
 
-function handleMessage(msg) {
+function handleMessage(usrname, msg) {
     if (msg === "!@#$exit show!@#$") {
         $(".hidden").css("display", "block");
     } else if (msg === "!@#$exit hidden!@#$") {
         $(".hidden").css("display", "none");
     } else {
-        $("#chatLog").append(msg + "\n");
+        if (usrname == "server") $("#chatLog").append("[server] " + msg + "\n");
+        else $("#chatLog").append(usrname + " : " + msg + "\n");
         $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
     }
 }

@@ -69,21 +69,24 @@ public class ConnectionController {
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        User user = (User) headerAccessor.getSessionAttributes().get("user");
+        User user = userService.findBySessionId(headerAccessor.getSessionId());
 
         // 유저 연결 종료
-        if (user.getStatus() == User.UserStatus.ROOM) { // room에 접속해 있을 때
-            roomService.removeUserFromRoom(user);
+        if (user != null) {
+            userService.removeUser(user);
+            if (user.getRoomId() != null) { // room에 접속해 있을 때
+                roomService.removeUserFromRoom(user);
 
-            messagingTemplate.convertAndSend(
-                    "/topic/room/list",
-                    new RoomListDto(
-                            roomService.getRooms().size(),
-                            roomService.getRoomStatuses()
-                    )
-            );
-        } else { // lobby에 접속해 있을 때
-            lobbyService.removeUserFromLobby(user.getSessionId());
+                messagingTemplate.convertAndSend(
+                        "/topic/room/list",
+                        new RoomListDto(
+                                roomService.getRooms().size(),
+                                roomService.getRoomStatuses()
+                        )
+                );
+            } else { // lobby에 접속해 있을 때
+                lobbyService.removeUserFromLobby(user.getSessionId());
+            }
         }
     }
 
