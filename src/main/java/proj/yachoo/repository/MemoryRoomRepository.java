@@ -9,7 +9,7 @@ import proj.yachoo.domain.Room;
 
 @Repository
 public class MemoryRoomRepository implements RoomRepository {
-    private Map<Integer, Room> roomMap = new HashMap<>();
+    private final Map<Integer, Room> roomMap = new HashMap<>();
 
     @Override
     public List<Room> findAll() {

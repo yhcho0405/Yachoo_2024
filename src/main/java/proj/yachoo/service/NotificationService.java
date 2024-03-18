@@ -12,6 +12,7 @@ import proj.yachoo.dto.response.NotificationDto;
 @RequiredArgsConstructor
 public class NotificationService {
     private static final String SERVER_MESSAGE_FORMAT = "[Server] %s";
+    private static final String SYSTEM_MESSAGE_FORMAT = "[System] %s";
     private static final String ROOM_MESSAGE_FORMAT = "[Room%d] %s";
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -47,7 +48,7 @@ public class NotificationService {
         messagingTemplate.convertAndSendToUser(
                 sessionId, "/queue/notifications",
                 new NotificationDto(
-                        String.format(SERVER_MESSAGE_FORMAT, message)
+                        String.format(SYSTEM_MESSAGE_FORMAT, message)
                 ),
                 createHeaders(sessionId)
         );

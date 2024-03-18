@@ -33,7 +33,7 @@ public class RoomService {
                 .toArray();
     }
 
-    public synchronized boolean joinRoom(User user, int roomId) {
+    public synchronized int joinRoom(User user, int roomId) {
         Room room = roomRepository.findById(roomId);
 
         if (room != null) {
@@ -45,11 +45,11 @@ public class RoomService {
                 room.getUsers().add(user);
                 user.setRoomId(roomId);
                 roomRepository.save(room);
-                return true;
+                return room.getStatus().getNumberOfUsers();
             }
         }
 
-        return false;
+        return 0;
     }
 
     public synchronized void removeUserFromRoom(User user) {

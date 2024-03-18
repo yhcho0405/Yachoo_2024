@@ -11,6 +11,7 @@ function onConnected() {
 
 
     stompClient.subscribe("/user/queue/info", assignUser);
+    stompClient.subscribe("/user/queue/notifications", receiveMessageHandler);
 
     stompClient.send("/app/connect", {});
 }
@@ -39,8 +40,7 @@ function assignUser(message) {
     sub_lobbychat = stompClient.subscribe("/topic/lobby/chat", receiveChatHandler);
     sub_lobbynoti = stompClient.subscribe("/topic/lobby/notifications", receiveMessageHandler);
     stompClient.subscribe("/topic/notifications", receiveMessageHandler);
-    stompClient.subscribe("/user/queue/notifications", receiveMessageHandler);
-    stompClient.subscribe(`/user/${username}/queue/table`, drawTableHandler);
+    stompClient.subscribe(`/user/queue/table`, drawTableHandler);
 
     stompClient.subscribe("/user/testCli", testCliHandler);
     stompClient.subscribe("/user/appendMe", appendMeHandler);
@@ -79,13 +79,12 @@ function roomListHandler(message) {
 }
 
 function joinedRoomHandler(message) {
+    var roomNumber = JSON.parse(message.body);
+    stompClient.subscribe(`/topic/room/${roomNumber}/notifications`, receiveMessageHandler);
+    stompClient.subscribe(`/topic/room/${roomNumber}/chat`, receiveChatHandler);
     sub_roomlist.unsubscribe();
     sub_lobbychat.unsubscribe();
     sub_lobbynoti.unsubscribe();
-    var roomNumber = JSON.parse(message.body);
-    stompClient.subscribe(`/topic/room/${roomNumber}/chat`, receiveChatHandler);
-    stompClient.subscribe(`/topic/room/${roomNumber}/notifications`, receiveMessageHandler);
-    console.log(roomNumber);
     cssMe(".rollingbtn", "display", "block");
     cssMe(".hidden", "display", "block");
     $(".room_name").append(`Room ${roomNumber}`);

@@ -14,8 +14,6 @@ import proj.yachoo.service.UserService;
 @RequiredArgsConstructor
 public class ChatController {
     private final UserService userService;
-    private final RoomService roomService;
-    private final LobbyService lobbyService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat")

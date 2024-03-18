@@ -14,7 +14,6 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import proj.yachoo.domain.User;
 import proj.yachoo.dto.response.ConnectionInfoDto;
 import proj.yachoo.dto.response.RoomListDto;
-import proj.yachoo.dto.request.JoinRoomRequestDto;
 import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.NotificationService;
 import proj.yachoo.service.RoomService;
@@ -37,6 +36,7 @@ public class ConnectionController {
         headerAccessor.getSessionAttributes().put("user", user);
 
         lobbyService.addUserToLobby(user.getSessionId());
+        notificationService.sendUser(user.getSessionId(), user.getUsername() + " joined the lobby.");
         notificationService.sendLobby(user.getUsername() + " joined the lobby.");
 
         return new ConnectionInfoDto(
@@ -44,32 +44,6 @@ public class ConnectionController {
                 roomService.getRooms().size(),
                 roomService.getRoomStatuses()
         );
-    }
-
-    @MessageMapping("/room/join")
-    public void handleJoinRoom(JoinRoomRequestDto requestDto, StompHeaderAccessor headerAccessor) {
-        User user = (User)headerAccessor.getSessionAttributes().get("user");
-        boolean joined = roomService.joinRoom(user, requestDto.getRoomId());
-
-        // room 접속
-        if (joined) {
-            lobbyService.removeUserFromLobby(user.getSessionId());
-            messagingTemplate.convertAndSendToUser(
-                    user.getSessionId(), "/queue/room/join",
-                    requestDto.getRoomId(),
-                    createHeaders(user.getSessionId())
-            );
-            messagingTemplate.convertAndSend(
-                    "/topic/room/list",
-                    new RoomListDto(
-                            roomService.getRooms().size(),
-                            roomService.getRoomStatuses()
-                    )
-            );
-            notificationService.sendUser(user.getSessionId(), "join room" + requestDto.getRoomId() + ".");
-            notificationService.sendRoom(requestDto.getRoomId(), user.getUsername() + " joined the room.");
-            notificationService.sendLobby(user.getUsername() + " joined the room" + requestDto.getRoomId() + ".");
-        }
     }
 
     @EventListener
@@ -97,14 +71,4 @@ public class ConnectionController {
             }
         }
     }
-
-    private MessageHeaders createHeaders(String sessionId) {
-        SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor
-                .create(SimpMessageType.MESSAGE);
-        headerAccessor.setSessionId(sessionId);
-        headerAccessor.setLeaveMutable(true);
-
-        return headerAccessor.getMessageHeaders();
-    }
-
 }
