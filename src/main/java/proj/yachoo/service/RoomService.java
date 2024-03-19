@@ -27,6 +27,10 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
+    public Room getRoomById(int roomId) {
+        return roomRepository.findById(roomId);
+    }
+
     public int[] getRoomStatuses() {
         return getRooms().stream()
                 .mapToInt(room -> room.getStatus().ordinal())

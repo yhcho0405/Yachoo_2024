@@ -8,8 +8,11 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
+import proj.yachoo.domain.Room;
+import proj.yachoo.domain.Room.RoomStatus;
 import proj.yachoo.domain.User;
-import proj.yachoo.dto.request.JoinRoomRequestDto;
+import proj.yachoo.dto.request.JoinRoomDto;
+import proj.yachoo.dto.request.RoomSubscribedDto;
 import proj.yachoo.dto.response.RoomListDto;
 import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.NotificationService;
@@ -24,7 +27,7 @@ public class RoomController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/room/join")
-    public void handleJoinRoom(JoinRoomRequestDto requestDto, StompHeaderAccessor headerAccessor) {
+    public void handleJoinRoom(JoinRoomDto requestDto, StompHeaderAccessor headerAccessor) {
         User user = (User)headerAccessor.getSessionAttributes().get("user");
         int joined = roomService.joinRoom(user, requestDto.getRoomId());
 
@@ -43,15 +46,28 @@ public class RoomController {
                             roomService.getRoomStatuses()
                     )
             );
-            notificationService.sendUser(user.getSessionId(), "join room" + requestDto.getRoomId() + ".");
-            notificationService.sendRoom(requestDto.getRoomId(), user.getUsername() + " joined the room.");
             notificationService.sendLobby(user.getUsername() + " joined the room" + requestDto.getRoomId() + ".");
-            if (joined == 1) {
-                notificationService.sendUser(user.getSessionId(), "다른 플레이어를 기다리는 중..");
-                notificationService.sendUser(user.getSessionId(), "플레이어가 2명이 되면 자동으로 게임이 시작됩니다.");
-            } else if (joined == 2) {
-                notificationService.sendUser(user.getSessionId(), "게임을 시작합니다.");
-                notificationService.sendRoom(requestDto.getRoomId(), "게임을 시작합니다.");
+        }
+    }
+
+
+    @MessageMapping("/room/subscribed")
+    public void handleRoomSubscribed(RoomSubscribedDto subscribedDto, StompHeaderAccessor headerAccessor) {
+        User user = (User) headerAccessor.getSessionAttributes().get("user");
+        int roomId = subscribedDto.getRoomId();
+
+        if (user != null && user.getRoomId() != null && user.getRoomId() == roomId) {
+            notificationService.sendRoom(roomId, user.getUsername() + " joined the room.");
+            Room room = roomService.getRoomById(roomId);
+
+            if (room != null) {
+                if (room.getStatus() == RoomStatus.STANDBY) {
+                    notificationService.sendRoom(roomId, "다른 플레이어를 기다리는 중..");
+                    notificationService.sendRoom(roomId, "플레이어가 2명이 되면 자동으로 게임이 시작됩니다.");
+
+                } else if (room.getStatus() == RoomStatus.FULL) {
+                    // TODO: game start 이벤트
+                }
             }
         }
     }

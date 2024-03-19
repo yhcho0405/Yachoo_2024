@@ -40,6 +40,7 @@ function assignUser(message) {
     sub_lobbychat = stompClient.subscribe("/topic/lobby/chat", receiveChatHandler);
     sub_lobbynoti = stompClient.subscribe("/topic/lobby/notifications", receiveMessageHandler);
     stompClient.subscribe("/topic/notifications", receiveMessageHandler);
+
     stompClient.subscribe(`/user/queue/table`, drawTableHandler);
 
     stompClient.subscribe("/user/testCli", testCliHandler);
@@ -89,6 +90,7 @@ function joinedRoomHandler(message) {
     cssMe(".hidden", "display", "block");
     $(".room_name").append(`Room ${roomNumber}`);
     $(".roomlist").remove();
+    stompClient.send("/app/room/subscribed", {}, JSON.stringify({ roomId: roomNumber}));
 }
 
 function drawTableHandler(message) {
