@@ -1,24 +1,76 @@
 package proj.yachoo.service.game;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import proj.yachoo.domain.Room;
-import proj.yachoo.domain.Room.RoomStatus;
+import proj.yachoo.domain.User;
 import proj.yachoo.domain.game.Game;
-import proj.yachoo.service.NotificationService;
-import proj.yachoo.service.RoomService;
+import proj.yachoo.domain.game.Game.Category;
+import proj.yachoo.repository.RoomRepository;
 
 @Service
-@RequiredArgsConstructor
 public class GameService {
-    private final NotificationService notificationService;
-    private final RoomService roomService;
+    private final RoomRepository roomRepository;
+
+    public GameService(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
+    }
+
+    public void createGame(Room room) {
+        Game game = new Game(room.getUsers());
+        room.setGame(game);
+        roomRepository.save(room);
+    }
+
+    public Game getGame(int roomId) {
+        Room room = roomRepository.findById(roomId);
+        if (room != null) {
+            return room.getGame();
+        }
+        return null;
+    }
 
     public void startGame(int roomId) {
-        Room room = roomService.getRoomById(roomId);
-        if (room != null && room.getStatus() == RoomStatus.FULL) {
-            notificationService.sendRoom(roomId, "게임을 시작합니다.");
-            // room.setGame(new Game());
+        Game game = getGame(roomId);
+        if (game != null) {
+            game.rollDice();
+        }
+    }
+
+    public void rollDice(int roomId) {
+        Game game = getGame(roomId);
+        if (game != null) {
+            game.rollDice();
+        }
+    }
+
+    public void keepDice(int roomId, int[] indexes) {
+        Game game = getGame(roomId);
+        if (game != null) {
+            game.keepDice(indexes);
+        }
+    }
+
+    public void chooseCategory(int roomId, User player, Category category) {
+        Game game = getGame(roomId);
+        if (game != null) {
+            game.chooseCategory(player, category);
+            if (game.isEnded()) {
+                endGame(roomId);
+            }
+        }
+    }
+
+    private void endGame(int roomId) {
+        Room room = roomRepository.findById(roomId);
+        if (room != null) {
+            Game game = room.getGame();
+            if (game != null) {
+                User winner = game.getWinner();
+                // Perform any necessary actions when the game ends
+                // e.g., update player stats, send notifications, etc.
+                room.setGame(null);
+                roomRepository.save(room);
+            }
         }
     }
 }

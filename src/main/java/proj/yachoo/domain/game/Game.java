@@ -12,7 +12,6 @@ public class Game {
     private static final int NUM_DICE = 5;
     private static final int NUM_ROUNDS = 13;
 
-    private String id;
     private List<User> players;
     private int currentPlayerIndex;
     private int currentRound;
@@ -22,8 +21,7 @@ public class Game {
     private Map<User, Integer> scores;
     private boolean isEnded;
 
-    public Game(String id, List<User> players) {
-        this.id = id;
+    public Game(List<User> players) {
         this.players = players;
         this.currentPlayerIndex = 0;
         this.currentRound = 1;
@@ -69,48 +67,21 @@ public class Game {
     }
 
     private int calculateScore(User player, Category category) {
-        int score = 0;
-        switch (category) {
-            case ONES:
-                score = calculateNumberScore(1);
-                break;
-            case TWOS:
-                score = calculateNumberScore(2);
-                break;
-            case THREES:
-                score = calculateNumberScore(3);
-                break;
-            case FOURS:
-                score = calculateNumberScore(4);
-                break;
-            case FIVES:
-                score = calculateNumberScore(5);
-                break;
-            case SIXES:
-                score = calculateNumberScore(6);
-                break;
-            case THREE_OF_A_KIND:
-                score = calculateOfAKindScore(3);
-                break;
-            case FOUR_OF_A_KIND:
-                score = calculateOfAKindScore(4);
-                break;
-            case FULL_HOUSE:
-                score = calculateFullHouseScore();
-                break;
-            case SMALL_STRAIGHT:
-                score = calculateStraightScore(4);
-                break;
-            case LARGE_STRAIGHT:
-                score = calculateStraightScore(5);
-                break;
-            case YACHT:
-                score = calculateYachtScore();
-                break;
-            case CHANCE:
-                score = calculateChanceScore();
-                break;
-        }
+        int score = switch (category) {
+            case ONES -> calculateNumberScore(1);
+            case TWOS -> calculateNumberScore(2);
+            case THREES -> calculateNumberScore(3);
+            case FOURS -> calculateNumberScore(4);
+            case FIVES -> calculateNumberScore(5);
+            case SIXES -> calculateNumberScore(6);
+            case THREE_OF_A_KIND -> calculateOfAKindScore(3);
+            case FOUR_OF_A_KIND -> calculateOfAKindScore(4);
+            case FULL_HOUSE -> calculateFullHouseScore();
+            case SMALL_STRAIGHT -> calculateStraightScore(4);
+            case LARGE_STRAIGHT -> calculateStraightScore(5);
+            case YACHT -> calculateYachtScore();
+            case CHANCE -> calculateChanceScore();
+        };
         return score;
     }
 
