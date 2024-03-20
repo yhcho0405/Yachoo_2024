@@ -68,7 +68,7 @@ public class RoomController {
                     notificationService.sendRoom(roomId, "플레이어가 2명이 되면 자동으로 게임이 시작됩니다.");
 
                 } else if (room.getStatus() == RoomStatus.FULL) {
-                    gameService.startGame(roomId);
+                    gameService.createGame(roomId);
                 }
             }
         }

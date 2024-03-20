@@ -45,7 +45,7 @@ class GameServiceTest {
         List<User> users = Arrays.asList(user1, user2);
         when(room.getUsers()).thenReturn(users);
 
-        gameService.createGame(room);
+        gameService.createGame(room.getId());
 
         verify(room).setGame(any(Game.class));
         verify(roomRepository).save(room);
@@ -60,16 +60,6 @@ class GameServiceTest {
 
         assertNotNull(retrievedGame);
         assertEquals(game, retrievedGame);
-    }
-
-    @Test
-    void 게임_시작_테스트() {
-        when(roomRepository.findById(1)).thenReturn(room);
-        when(room.getGame()).thenReturn(game);
-
-        gameService.startGame(1);
-
-        verify(game).rollDice();
     }
 
     @Test

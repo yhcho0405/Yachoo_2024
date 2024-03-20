@@ -15,10 +15,10 @@ public class GameService {
         this.roomRepository = roomRepository;
     }
 
-    public void createGame(Room room) {
+    public void createGame(int roomId) {
+        Room room = roomRepository.findById(roomId);
         Game game = new Game(room.getUsers());
         room.setGame(game);
-        roomRepository.save(room);
     }
 
     public Game getGame(int roomId) {
@@ -27,13 +27,6 @@ public class GameService {
             return room.getGame();
         }
         return null;
-    }
-
-    public void startGame(int roomId) {
-        Game game = getGame(roomId);
-        if (game != null) {
-            game.rollDice();
-        }
     }
 
     public void rollDice(int roomId) {
@@ -66,8 +59,7 @@ public class GameService {
             Game game = room.getGame();
             if (game != null) {
                 User winner = game.getWinner();
-                // Perform any necessary actions when the game ends
-                // e.g., update player stats, send notifications, etc.
+                // TODO: 승자, 점수 noti
                 room.setGame(null);
                 roomRepository.save(room);
             }
