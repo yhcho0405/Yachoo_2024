@@ -2,6 +2,7 @@ package proj.yachoo.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import proj.yachoo.domain.game.Game;
 
 @Data
 @AllArgsConstructor

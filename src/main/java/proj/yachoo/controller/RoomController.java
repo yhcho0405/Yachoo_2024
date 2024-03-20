@@ -17,6 +17,7 @@ import proj.yachoo.dto.response.RoomListDto;
 import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.NotificationService;
 import proj.yachoo.service.RoomService;
+import proj.yachoo.service.game.GameService;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class RoomController {
     private final LobbyService lobbyService;
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final GameService gameService;
 
     @MessageMapping("/room/join")
     public void handleJoinRoom(JoinRoomDto requestDto, StompHeaderAccessor headerAccessor) {
@@ -66,7 +68,7 @@ public class RoomController {
                     notificationService.sendRoom(roomId, "플레이어가 2명이 되면 자동으로 게임이 시작됩니다.");
 
                 } else if (room.getStatus() == RoomStatus.FULL) {
-                    // TODO: game start 이벤트
+                    gameService.startGame(roomId);
                 }
             }
         }
