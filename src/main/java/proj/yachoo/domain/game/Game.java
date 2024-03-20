@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import lombok.Getter;
+import lombok.Setter;
 import proj.yachoo.domain.User;
 
-@Getter
+@Getter @Setter
 public class Game {
     private static final int NUM_DICE = 5;
     private static final int NUM_ROUNDS = 13;
