@@ -13,6 +13,7 @@ import proj.yachoo.domain.Room.RoomStatus;
 import proj.yachoo.domain.User;
 import proj.yachoo.dto.request.JoinRoomDto;
 import proj.yachoo.dto.request.RoomSubscribedDto;
+import proj.yachoo.dto.response.GameRoundInfoDto;
 import proj.yachoo.dto.response.RoomListDto;
 import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.NotificationService;
@@ -25,8 +26,8 @@ public class RoomController {
     private final RoomService roomService;
     private final LobbyService lobbyService;
     private final NotificationService notificationService;
-    private final SimpMessagingTemplate messagingTemplate;
     private final GameService gameService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/room/join")
     public void handleJoinRoom(JoinRoomDto requestDto, StompHeaderAccessor headerAccessor) {
@@ -41,13 +42,7 @@ public class RoomController {
                     requestDto.getRoomId(),
                     createHeaders(user.getSessionId())
             );
-            messagingTemplate.convertAndSend(
-                    "/topic/room/list",
-                    new RoomListDto(
-                            roomService.getRooms().size(),
-                            roomService.getRoomStatuses()
-                    )
-            );
+            notificationService.roomList();
             notificationService.sendLobby(user.getUsername() + " joined the room" + requestDto.getRoomId() + ".");
         }
     }
@@ -69,6 +64,11 @@ public class RoomController {
 
                 } else if (room.getStatus() == RoomStatus.FULL) {
                     gameService.createGame(roomId);
+                    messagingTemplate.convertAndSend(
+                            "/topic/game/" + roomId + "/start",
+                            true
+                    );
+                    notificationService.sendRoom(roomId, "게임을 시작합니다.");
                 }
             }
         }

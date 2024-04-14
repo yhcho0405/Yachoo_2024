@@ -2,10 +2,7 @@ package proj.yachoo.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -18,6 +15,7 @@ import proj.yachoo.service.LobbyService;
 import proj.yachoo.service.NotificationService;
 import proj.yachoo.service.RoomService;
 import proj.yachoo.service.UserService;
+import proj.yachoo.service.game.GameService;
 
 @Controller
 @RequiredArgsConstructor
@@ -54,17 +52,14 @@ public class ConnectionController {
         // 유저 연결 종료
         if (user != null) {
             userService.removeUser(user);
-            if (user.isInRoom()) { // room에 접속해 있을 때
+            if (user.isInRoom()) {
                 notificationService.sendRoom(user.getRoomId(), user.getUsername() + " left the room.");
-                roomService.removeUserFromRoom(user);
                 messagingTemplate.convertAndSend(
-                        "/topic/room/list",
-                        new RoomListDto(
-                                roomService.getRooms().size(),
-                                roomService.getRoomStatuses()
-                        )
+                        "/topic/game/" + user.getRoomId() + "/start",
+                        false
                 );
-
+                roomService.removeUserFromRoom(user);
+                notificationService.roomList();
             } else if (user.isInLobby()) { // lobby에 접속해 있을 때
                 lobbyService.removeUserFromLobby(user.getSessionId());
                 notificationService.sendLobby(user.getUsername() + " left the lobby.");

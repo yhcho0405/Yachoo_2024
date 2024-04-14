@@ -6,8 +6,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import proj.yachoo.domain.User;
 import proj.yachoo.dto.response.ChatMessageDto;
-import proj.yachoo.service.LobbyService;
-import proj.yachoo.service.RoomService;
 import proj.yachoo.service.UserService;
 
 @Controller

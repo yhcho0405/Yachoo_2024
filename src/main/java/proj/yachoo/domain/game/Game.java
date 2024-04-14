@@ -1,5 +1,6 @@
 package proj.yachoo.domain.game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,10 @@ public class Game {
             categories.put(player, new HashMap<>());
             scores.put(player, 0);
         }
+    }
+
+    public User getCurrentPlayer() {;
+        return players.get(currentPlayerIndex);
     }
 
     public void rollDice() {

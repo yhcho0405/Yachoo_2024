@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import proj.yachoo.dto.response.NotificationDto;
+import proj.yachoo.dto.response.RoomListDto;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class NotificationService {
     private static final String SYSTEM_MESSAGE_FORMAT = "[System] %s";
     private static final String ROOM_MESSAGE_FORMAT = "[Room%d] %s";
 
+    private final RoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
 
     public void sendGlobal(String message) {
@@ -51,6 +53,16 @@ public class NotificationService {
                         String.format(SYSTEM_MESSAGE_FORMAT, message)
                 ),
                 createHeaders(sessionId)
+        );
+    }
+
+    public void roomList() {
+        messagingTemplate.convertAndSend(
+                "/topic/room/list",
+                new RoomListDto(
+                        roomService.getRooms().size(), // 별로..
+                        roomService.getRoomStatuses()
+                )
         );
     }
 

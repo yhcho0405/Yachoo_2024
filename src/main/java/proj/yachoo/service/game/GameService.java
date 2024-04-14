@@ -1,5 +1,6 @@
 package proj.yachoo.service.game;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import proj.yachoo.domain.Room;
 import proj.yachoo.domain.User;
@@ -8,12 +9,9 @@ import proj.yachoo.domain.game.Game.Category;
 import proj.yachoo.repository.RoomRepository;
 
 @Service
+@RequiredArgsConstructor
 public class GameService {
     private final RoomRepository roomRepository;
-
-    public GameService(RoomRepository roomRepository) {
-        this.roomRepository = roomRepository;
-    }
 
     public void createGame(int roomId) {
         Room room = roomRepository.findById(roomId);
@@ -25,6 +23,14 @@ public class GameService {
         Room room = roomRepository.findById(roomId);
         if (room != null) {
             return room.getGame();
+        }
+        return null;
+    }
+
+    public User getCurrentPlayer(int roomId) {
+        Game game = getGame(roomId);
+        if (game != null) {
+            return game.getCurrentPlayer();
         }
         return null;
     }
